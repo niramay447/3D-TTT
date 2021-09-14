@@ -3,7 +3,7 @@ from random import randint
 N = 3
 PLAYER = 1
 COMPUTER = 2
-DIFF = [-1, 0, 1]  #border
+DIFF = [-1, 0, 1]
 winner = 0
 moves = 0
 curr_move_taker = 0
@@ -20,16 +20,17 @@ def delimiter():
 
 
 #this function generates a 3 dimensional cube
+#and it initialises all points with 0 value
 def gen_cube():
     """
     Generate a cube
     """
     return [[[0 for k in range(N)] for j in range(N)] for i in range(N)]
 
-
+#tic tac toe board
 TIC_TAC_TOE = gen_cube()
 
-
+#function to print the three planes of the cube
 def print_cube(cube):
     for i in range(0, N):
         print("Plane " + str(i + 1) + ": ")
@@ -40,7 +41,7 @@ def print_cube(cube):
         print("\n")
 
 
-#this function generates a magic cube
+# this function generates a magic cube
 def gen_magic_cube():
     """
     Generate magic cube
@@ -61,7 +62,7 @@ def gen_magic_cube():
                 cube[i - 1][j - 1][k - 1] = a * N * N + b * N + c + 1
     return cube
 
-
+#magic cube
 MAGIC_CUBE = gen_magic_cube()
 
 
@@ -77,7 +78,7 @@ def points_are_collinear(a, b, c):
     ca1 = c[0] - a[0]
     ca2 = c[1] - a[1]
     ca3 = c[2] - a[2]
-
+#condition for three points to be collinear
     if ba2 * ca3 - ca2 * ba3 != 0:
         return False
 
@@ -90,21 +91,25 @@ def points_are_collinear(a, b, c):
     return True
 
 
-#this function takes a point and returns true if the point is in the required range of the cube and returns false otherwise
+#this function takes a point and returns true if the point
+#is in the required range of the cube and returns false otherwise
 def is_point_in_bounds(p):
     """
     Checks if the point is in the cube
     """
     return (0 <= p[0] < N) and (0 <= p[1] < N) and (0 <= p[2] < N)
 
-
+#this function takes a tuple and returns the value at that point
+#in the cube : 0 if the position is not marked
+#1 if the position is marked by the player and 2 if its marked by the computer
 def get_value_at_point(p, cube):
     """
     Gives the value at the required point
     """
     return cube[p[0]][p[1]][p[2]]
 
-
+#this function takes a tuple and returns true if the position
+#on the cube is empty
 def is_position_empty(p, cube):
     """
     Check is the position in the cube is empty for the given point
@@ -112,7 +117,11 @@ def is_position_empty(p, cube):
     return get_value_at_point(p, cube) == 0
 
 
-def search_value(value, cube):  #value=??
+
+#this function checks if a particular value is present in the cube
+#and if it does, it returns the position at which it is present as a tuple
+
+def search_value(value, cube):
     """
     Get the point if the search value is present in the cube
     """
@@ -124,6 +133,8 @@ def search_value(value, cube):  #value=??
     return None
 
 
+#this function counts the number of lines won by the player
+#or the computer at a particular stage in the game
 def winning_lines_count(for_who):
     """
     Returns the count of number of winning lines
@@ -141,13 +152,15 @@ def winning_lines_count(for_who):
                 v1 = get_value_at_point(a, MAGIC_CUBE)
                 v2 = get_value_at_point(b, MAGIC_CUBE)
                 v3 = get_value_at_point(c, MAGIC_CUBE)
-
+                #check if points indeed sum up to the 42 and are collinear
                 if v1 + v2 + v3 == 42 and points_are_collinear(a, b, c):
                     count += 1
 
     return count
 
 
+#this function helps the computer make a move and
+#returns the point that would make a winning line for the computer
 def get_winning_line_point(moves_list):
     """
     Gets the point to for a winning line
@@ -165,8 +178,7 @@ def get_winning_line_point(moves_list):
 
             if v3 >= 1 and v3 <= 27:
                 pt3 = search_value(v3, MAGIC_CUBE)
-                if points_are_collinear(pt1, pt2, pt3) and is_position_empty(
-                        pt3, TIC_TAC_TOE):
+                if points_are_collinear(pt1, pt2, pt3) and is_position_empty(pt3, TIC_TAC_TOE):
                     try:
                         hash_map[pt3] += 1
                     except KeyError:
@@ -174,7 +186,7 @@ def get_winning_line_point(moves_list):
 
     if len(hash_map) == 0:
         return (-1, -1, -1)
-    else:  #border
+    else:
         res = (-1, -1, -1)
         max_occurences = 0
         for (k, v) in hash_map.items():
@@ -184,6 +196,9 @@ def get_winning_line_point(moves_list):
         return res
 
 
+#if the computer cannot win a line on the next move
+#and if the player win line is not to be blocked,
+#this function returns the point that the computer would mark
 def computer_optimal_random_move():
     pt = (-1, -1, -1)
     global computer_moves_list
@@ -198,9 +213,7 @@ def computer_optimal_random_move():
                 for k in range(0, N):
                     np = (plane + DIFF[i], row + DIFF[j], col + DIFF[k])
 
-                    if is_point_in_bounds(np) and is_position_empty(
-                            np, TIC_TAC_TOE):
-                        # maybe it isn't np but diff[i] wala indices
+                    if is_point_in_bounds(np) and is_position_empty(np, TIC_TAC_TOE):
                         return np
 
         for i in range(0, N):
@@ -211,32 +224,43 @@ def computer_optimal_random_move():
                         return pt
 
 
+#this function calculates the computer's move
 def get_next_computer_move():
     global computer_moves_list, player_moves_list, N
     num_p_moves = len(player_moves_list)
     num_c_moves = len(computer_moves_list)
     #computer's first move
     if num_c_moves == 0:
+        #if middle position (1,1,1) is empty, mark that
+        #else mark (0,0,0)
         if is_position_empty((1, 1, 1), TIC_TAC_TOE):
             return (1, 1, 1)
         else:
             return (0, 0, 0)
-
+    #computer's second move
     elif num_c_moves == 1:
+        #if player has only had one move
+        # mark (0,0,0) if it's empty
+        # if (0,0,0) is filled, mark (2,2,2)
+        # if (2,2,2) is filled, mark (0,2,0)
         if num_p_moves == 1:
             pt1 = (0, 0, 0)
             pt2 = (N - 1, N - 1, N - 1)
-            if is_position_empty(pt1, TIC_TAC_TOE) and is_position_empty(
-                    pt2, TIC_TAC_TOE):
+            if is_position_empty(pt1, TIC_TAC_TOE):
                 return pt1
+            elif is_position_empty(pt2, TIC_TAC_TOE):
+                return pt2
             else:
                 return (0, N - 1, 0)
+        # if the player has had more than one move
         else:
+            #check the winning point
             pt = get_winning_line_point(player_moves_list)
             if is_point_in_bounds(pt):
                 return pt
             else:
                 return computer_optimal_random_move()
+    #computer's moves after the second move
     else:
         pt = get_winning_line_point(computer_moves_list)
         if is_point_in_bounds(pt):
@@ -249,20 +273,22 @@ def get_next_computer_move():
                 return computer_optimal_random_move()
 
 
-#computer move to block player win
+#this function starts the game and randomly assigns
+#the first move to the player or the computer
 def greet():
     global curr_move_taker
     print("Welcome to 3d TicTacToe")
-    print("You'll be assigned X or O randomly, here you go...")
+    print("You'll be assigned first or second move randomly, here you go...")
     user = randint(1, 2)
     if user == 1:
-        print("You are X, make the first move")
+        print("You are 1, make the first move")
         curr_move_taker = PLAYER
     else:
-        print("You are O, you go second")
+        print("You are 2, you go second")
         curr_move_taker = COMPUTER
 
 
+#this function handles the user's input when the move is taken in
 def take_users_move():
     global moves, curr_move_taker, TIC_TAC_TOE, player_moves_list
     while True:
@@ -270,7 +296,7 @@ def take_users_move():
             map(lambda x: int(x.strip()),
                 input("Type your next move:\t").split(',')))
         if not len(user_ip) == 3:
-            print("Invalid input, must have tree numbers")
+            print("Invalid input, must have three numbers")
             continue
         if not is_point_in_bounds(user_ip):
             print(
@@ -287,11 +313,23 @@ def take_users_move():
     moves += 1
 
 
+#this function prints the player and computer moves made so far
+def show_moves():
+  global computer_moves_list, player_moves_list
+  print("Computer moves:" + str(computer_moves_list))
+  print("Player moves:" + str(player_moves_list))
+
+
+#this function shows the options that the user has
+#and takes the input calls the required functions
 def show_menu():
     while True:
-        print("\n1. Show game stats")
-        print("2. Show tic-tac-toe cube")
-        print("3. Take your turn")
+        print("\n1.Show magic cube")
+        print("2. Show game stats")
+        print("3. Show tic-tac-toe cube")
+        print("4. Take your turn")
+        print("5. Show computer and User Moves")
+
         user_choice = None
         while True:
             try:
@@ -300,17 +338,24 @@ def show_menu():
             except ValueError:
                 print("That was not a valid number.")
         if (user_choice == 1):
+            print_cube(MAGIC_CUBE)
+            break
+        elif (user_choice == 2):
             show_game_stats()
             break
-        elif user_choice == 2:
-            print_cube(TIC_TAC_TOE)
         elif user_choice == 3:
+            print_cube(TIC_TAC_TOE)
+        elif user_choice == 4:
             take_users_move()
+            break
+        elif user_choice == 5:
+            show_moves()
             break
         else:
             print("Please enter either 1, 2, or 3")
 
 
+#this function prints the game stats
 def show_game_stats():
     global moves, PLAYER, COMPUTER
     delimiter()
@@ -321,7 +366,8 @@ def show_game_stats():
     delimiter()
 
 
-def mainloop():
+#this function drives the entire 3D Tic Tac Toe game
+def playTTT():
     global winner, moves, curr_move_taker, started, finished, PLAYER, COMPUTER
     winner = 0
     moves = 0
@@ -364,9 +410,8 @@ def mainloop():
             if winner == 3:
                 print("It's a draw")
             else:
-                print(("Player" if winner == PLAYER else "Computer") +
-                      " wins the game")
+                print(("Player" if winner == PLAYER else "Computer") + " wins the game")
             return
 
 
-mainloop()
+playTTT()
